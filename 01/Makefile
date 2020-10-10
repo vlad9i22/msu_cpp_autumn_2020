@@ -8,6 +8,7 @@ main.o: main.cpp
 test: test.o
 	$(CC) test.o -o test
 	./test
+	rm -f *.o
 test.o: test.cpp
 	$(CC) $(FLAGS) -c test.cpp
 clean:
