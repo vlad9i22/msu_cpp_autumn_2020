@@ -1,13 +1,15 @@
+#ifndef TokenParser_H
+#define TokenParser_H 
 #include <iostream>
 #include <functional>
 #include <sstream>
 #include <string.h>
 #include <cassert>
 using namespace std;
-void StringDefault(std::string s) {
+void StringDefault(const std::string &s) {
     cout << "I found a string: " << s << endl;
 }
-void DigitDefault(long long int a) {
+void DigitDefault(const long long int &a) {
     cout << "I found a digit:  " << a << endl;
 }
 void StartCallDefault() {
@@ -18,13 +20,7 @@ void EndCallDefault() {
 }
 bool isDigit(std::string s) {
     for(auto i : s) {
-        bool AnyDigits = false;
-        for(char num = '0'; num <= '9'; ++num) {
-            if(i == num) {
-                AnyDigits = true;
-            }
-        }
-        if(!AnyDigits) {
+        if(!isdigit(i)) {
             return false;
         }
     }
@@ -34,8 +30,8 @@ class TokenParser
 {
     std::string input;
     std::function<void()> StartCall;
-    std::function<void(std::string)> StringCall;
-    std::function<void(long long int)> DigitCall;
+    std::function<void(const std::string &)> StringCall;
+    std::function<void(const long long int &)> DigitCall;
     std::function<void()> EndCall;
     public:
         TokenParser(std::string s) : StartCall(StartCallDefault), StringCall(StringDefault), 
@@ -50,10 +46,10 @@ class TokenParser
         void SetStartCallback(std::function<void()> f) {
             StartCall = f;
         }
-        void SetDigitTokenCallback(std::function<void(long long int)> f) {
+        void SetDigitTokenCallback(std::function<void(const long long int &)> f) {
             DigitCall = f;
         }
-        void SetStringTokenCallback(std::function<void(string)> f) {
+        void SetStringTokenCallback(std::function<void(const std::string &)> f) {
             StringCall = f;
         }
         void SetEndCallback(std::function<void()> f) {
@@ -76,3 +72,4 @@ class TokenParser
             EndCall();
         }
 };
+#endif

@@ -1,41 +1,68 @@
 #include <iostream>
 #include "TokenParser.h"
 using namespace std;
-void Simpletest() {
-    cout << "Simpletest" << std::endl;
-    TokenParser a("abcd 34a343345 123123 vbbggfb dfg 333");
-    a.Parse();
-}
-void FunctionTest() {
-    cout << std::endl;
-    cout << std::endl;
-    cout << "FunctionTest" << std::endl;
-    TokenParser a("abcd 34a343345 123123 vbbggfb dfg 333 2 3 4 5 5a5");
+long long int glob[3];
+std::string test[2];
+std::string stringtest[3];
+void Functionaltest() {
+    TokenParser a("abc hhjk 2 a 25 40");
     a.SetStartCallback([]() {
-        cout << "hello" << endl;
+        test[0] = "hello";
     });
     a.SetEndCallback([]() {
-        cout << "Goodbye" << endl;
+        test[1] = "Goodbye";
     });
-    a.SetDigitTokenCallback([](long long int a) {
-        cout << a * a << endl;
+    a.SetDigitTokenCallback([](const long long int &a) {
+        static int i = 0;
+        glob[i] = a * a;
+        i++;
     });
-    a.SetStringTokenCallback([](std::string s) {
-        cout << s << endl;
+    a.SetStringTokenCallback([](const std::string &s) {
+        static int i = 0;
+        stringtest[i] = s;
+        i++;
     });
     a.Parse();
+    assert(test[0] == "hello");
+    assert(test[1] == "Goodbye");
+    assert(glob[0] == 4);
+    assert(glob[1] == 625);
+    assert(glob[2] == 40 * 40);
+    assert(stringtest[0] == "abc");
+    assert(stringtest[1] == "hhjk");
+    assert(stringtest[2] == "a");
 }
 void SpacesTabsTest() {
-    cout << std::endl;
-    cout << std::endl;
-    cout << "SpacesTabsTest" << std::endl;
-    TokenParser a("a\r\r\r\rbc\t\td\n\n\n\n\n 34a343\n345                 123123 vbbggfb dfg\t\t\t\t\t\t33\n3\n");
+    TokenParser a("p[]lklg.jk.gjklabc\t\t\t\n    hhjk     2\n\n\n a \r\r\r25 40");
+    a.SetStartCallback([]() {
+        test[0] = "hello";
+    });
+    a.SetEndCallback([]() {
+        test[1] = "Goodbye";
+    });
+    a.SetDigitTokenCallback([](const long long int &a) {
+        static int i = 0;
+        glob[i] = a * a;
+        i++;
+    });
+    a.SetStringTokenCallback([](const std::string &s) {
+        static int i = 0;
+        stringtest[i] = s;
+        i++;
+    });
     a.Parse();
+    assert(test[0] == "hello");
+    assert(test[1] == "Goodbye");
+    assert(glob[0] == 4);
+    assert(glob[1] == 625);
+    assert(glob[2] == 40 * 40);
+    assert(stringtest[0] == "p[]lklg.jk.gjklabc");
+    assert(stringtest[1] == "hhjk");
+    assert(stringtest[2] == "a");
 }
 
 int main() {
-    Simpletest();
-    FunctionTest();
+    Functionaltest();
     SpacesTabsTest();
-    cout << "Test completed, check for correctness in console" << std::endl;
+    cout << "Program is running correctly" << std::endl;
 }
