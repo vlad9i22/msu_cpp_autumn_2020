@@ -12,7 +12,7 @@ void Functionaltest() {
     a.SetEndCallback([]() {
         test[1] = "Goodbye";
     });
-    a.SetDigitTokenCallback([](const long long int &a) {
+    a.SetDigitTokenCallback([](const long long int a) {
         static int i = 0;
         glob[i] = a * a;
         i++;
@@ -40,7 +40,7 @@ void SpacesTabsTest() {
     a.SetEndCallback([]() {
         test[1] = "Goodbye";
     });
-    a.SetDigitTokenCallback([](const long long int &a) {
+    a.SetDigitTokenCallback([](const long long int a) {
         static int i = 0;
         glob[i] = a * a;
         i++;

@@ -9,7 +9,7 @@ using namespace std;
 void StringDefault(const std::string &s) {
     cout << "I found a string: " << s << endl;
 }
-void DigitDefault(const long long int &a) {
+void DigitDefault(const long long int a) {
     cout << "I found a digit:  " << a << endl;
 }
 void StartCallDefault() {
@@ -18,8 +18,8 @@ void StartCallDefault() {
 void EndCallDefault() {
     cout << "Parsing ended" << endl;
 }
-bool isDigit(std::string s) {
-    for(auto i : s) {
+bool isDigit(const std::string &s) {
+    for(auto &i : s) {
         if(!isdigit(i)) {
             return false;
         }
@@ -31,28 +31,28 @@ class TokenParser
     std::string input;
     std::function<void()> StartCall;
     std::function<void(const std::string &)> StringCall;
-    std::function<void(const long long int &)> DigitCall;
+    std::function<void(const long long int )> DigitCall;
     std::function<void()> EndCall;
     public:
-        TokenParser(std::string s) : StartCall(StartCallDefault), StringCall(StringDefault), 
+        TokenParser(const std::string &s) : StartCall(StartCallDefault), StringCall(StringDefault), 
         DigitCall(DigitDefault),  EndCall(EndCallDefault) {
-            for(size_t i = 0; i < s.length(); ++i) {
-                if(s[i] == '\t' || s[i] == '\n' || s[i] == '\v') {
-                    s[i] = ' ';
+            input = s;
+            for(size_t i = 0; i < input.length(); ++i) {
+                if(input[i] == '\t' || input[i] == '\n' || input[i] == '\v') {
+                    input[i] = ' ';
                 }
             }
-            input = s;
         }
-        void SetStartCallback(std::function<void()> f) {
+        void SetStartCallback(const std::function<void()> &f) {
             StartCall = f;
         }
-        void SetDigitTokenCallback(std::function<void(const long long int &)> f) {
+        void SetDigitTokenCallback(const std::function<void(const long long int )> &f) {
             DigitCall = f;
         }
-        void SetStringTokenCallback(std::function<void(const std::string &)> f) {
+        void SetStringTokenCallback(const std::function<void(const std::string &)> &f) {
             StringCall = f;
         }
-        void SetEndCallback(std::function<void()> f) {
+        void SetEndCallback(const std::function<void()> &f) {
             EndCall = f;
         }
         void Parse() {
