@@ -19,7 +19,7 @@ void EndCallDefault() {
     cout << "Parsing ended" << endl;
 }
 bool isDigit(const std::string &s) {
-    for(auto &i : s) {
+    for(const auto &i : s) {
         if(!isdigit(i)) {
             return false;
         }
@@ -31,7 +31,7 @@ class TokenParser
     std::string input;
     std::function<void()> StartCall;
     std::function<void(const std::string &)> StringCall;
-    std::function<void(const long long int )> DigitCall;
+    std::function<void(const long long int)> DigitCall;
     std::function<void()> EndCall;
     public:
         TokenParser(const std::string &s) : StartCall(StartCallDefault), StringCall(StringDefault), 
