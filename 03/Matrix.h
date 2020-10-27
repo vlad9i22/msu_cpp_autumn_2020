@@ -40,6 +40,7 @@ public:
         }
     }
     Matrix &operator=(const Matrix& right) {
+        this->~Matrix();
         rows = right.rows;
         columns = right.columns;
         a = new int* [rows];
@@ -84,8 +85,33 @@ public:
         return *this;
     }
     friend std::ostream& operator<<(std::ostream& os, const Matrix& obj);
-    friend Matrix operator+(const Matrix &left, const Matrix &right);
-    friend inline bool operator==(const Matrix &lhs, const Matrix &rhs);
+    Matrix operator+(const Matrix &right) {
+        size_t rows = min(rows, right.getRows());
+        size_t columns = min(columns, right.getColumns());
+        Matrix res(rows, columns);
+        for(size_t i = 0; i < rows; ++i) {
+            for(size_t j = 0; j < columns; ++j) {
+                res[i][j] = a[i][j] + right[i][j];
+            }
+        }
+        return res;
+    }
+    bool operator==(const Matrix &right) {
+        if(rows != right.rows || columns != right.columns) {
+            return false;
+        }
+        for(size_t i = 0; i < rows; ++i) {
+            for(size_t j = 0; j < right.rows; ++j) {
+                if(a[i][j] != right[i][j]) {
+                    return false;
+                }
+            } 
+        }
+        return true;
+    }
+    bool operator!=(const Matrix &right) {
+        return !(*this == right);
+    }
     ~Matrix() {
         for(size_t i = 0; i < rows; ++i) {
             delete [] a[i];
@@ -103,28 +129,5 @@ std::ostream& operator<<(std::ostream& os, const Matrix& a)
     }
     return os;
 }
-Matrix operator+(const Matrix &left, const Matrix &right) {
-    size_t rows = min(left.rows, right.getRows());
-    size_t columns = min(left.columns, right.getColumns());
-    Matrix res(rows, columns);
-    for(size_t i = 0; i < rows; ++i) {
-        for(size_t j = 0; j < columns; ++j) {
-            res[i][j] = left[i][j] + right[i][j];
-        }
-    }
-    return res;
-}
-inline bool operator==(const Matrix &left, const Matrix &right) {
-    if(left.rows != right.rows || left.columns != right.columns) {
-        return false;
-    }
-    for(size_t i = 0; i < left.rows; ++i) {
-        for(size_t j = 0; j < right.rows; ++j) {
-            if(left[i][j] != right[i][j]) {
-                return false;
-            }
-        } 
-    }
-    return true;
-}
+
 #endif

@@ -44,6 +44,7 @@ void EqualTest() {
     assert((a == b) == true);
     b[0][0] = 300;
     assert((a == b) == false);
+    assert((a != b) == true);
 }
 void AddTest() {
     Matrix a(2, 2);
