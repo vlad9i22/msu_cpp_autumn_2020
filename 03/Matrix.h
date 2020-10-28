@@ -89,11 +89,11 @@ public:
     }
     friend std::ostream& operator<<(std::ostream& os, const Matrix& obj);
     Matrix operator+(const Matrix &right) {
-        size_t rows = min(rows, right.getRows());
-        size_t columns = min(columns, right.getColumns());
-        Matrix res(rows, columns);
-        for(size_t i = 0; i < rows; ++i) {
-            for(size_t j = 0; j < columns; ++j) {
+        size_t row = min(rows, right.getRows());
+        size_t column = min(columns, right.getColumns());
+        Matrix res(max(rows, right.getRows()), max(columns, right.getColumns()));
+        for(size_t i = 0; i < row; ++i) {
+            for(size_t j = 0; j < column; ++j) {
                 res[i][j] = a[i][j] + right[i][j];
             }
         }
