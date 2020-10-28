@@ -40,6 +40,9 @@ public:
         }
     }
     Matrix &operator=(const Matrix& right) {
+        if(&right == this) {
+            return *this;
+        }
         this->~Matrix();
         rows = right.rows;
         columns = right.columns;
