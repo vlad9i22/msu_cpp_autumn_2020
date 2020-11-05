@@ -125,10 +125,12 @@ public:
         }
     }
     Bigint(Bigint &&str) : sign(str.sign), num(str.num) {
-      str.num = myvector(0);
-      str.sign = 1;
+        str.sign = 1;
     }
-    Bigint(const Bigint& a) = default;
+    Bigint(const Bigint& a) {
+        num = a.num;
+        sign = a.sign;
+    }
     char &operator[](const int64_t i) const{
         return num[i];
     }
