@@ -284,18 +284,28 @@ Bigint operator+(const Bigint &lf, const Bigint &ro) {
     return res;
 }
 Bigint operator*(const Bigint &lf, const Bigint &ro) {
-    if(lf == 0 || ro == 0) {
-        return Bigint(0);
+    if(lf.sign == -1 && ro.sign == -1) {
+        return (-ro * -lf);
     }
-    Bigint res = ro;
-    res.sign = 1;
-    Bigint count = lf - 1;
-    count.sign = 1;
-    while(count != 0) {
-        count = count - 1;
-        res = res + ro;
+    if(lf.sign == 1 && ro.sign == -1) {
+        return -(lf * (-ro));
     }
-    res.sign = lf.sign * ro.sign;
+    if(lf.sign == -1 && ro.sign == 1) {
+        return -(ro * (-lf));
+    }
+    Bigint res;
+    int64_t size = lf.num.mysize() + ro.num.mysize();
+    for(int64_t i = 0; i < size; ++i) {
+        res.num.push_back(0);
+    }
+    for(int64_t i = 0; i < lf.num.mysize(); ++i) {
+        int carry = 0;
+        for(int64_t j = 0; j < ro.num.mysize() || carry != 0; ++j) {
+            int64_t cur = res[i + j] + ro[j] * lf[i] + carry;
+            res[i + j] = cur % 10;
+            carry = cur / 10;
+        }
+    }
     res.num.deletezeros();
     return res;
 }

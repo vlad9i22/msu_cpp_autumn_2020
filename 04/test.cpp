@@ -18,7 +18,6 @@ void HighDigitTest() {
     Bigint e("245724572475472554267"), f("1354635146773541754745");
     assert(e + f == Bigint("1600359719249014309012"));
     assert(a + 1 == 544);
-    assert((a * b) == 332316);
 }
 void CompTest1() {
     Bigint a("1345613567413567173542547245772547245"), b(343234);
@@ -49,5 +48,7 @@ int main() {
     CompTest1();
     CompTest2();
     ZerosTest();
+    Bigint c("9999999999999999999999999"), d("9123456789987");
+    assert(c * d == Bigint("91234567899869999999999990876543210013"));
     cout << "Program is running correctly" << std::endl;
 }
