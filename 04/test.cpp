@@ -1,5 +1,5 @@
 #include <iostream>
-#include "Matrix.h"
+#include "Bigint.h"
 #include <assert.h>
 using namespace std;
 void LowDigitTest() {
@@ -37,11 +37,17 @@ void CompTest2() {
     assert((a != b) == 0);
     Bigint c("1345613567413567173542547245772547245"), d("1345613567413567173542547245772547245");
     assert((c == d) == 1);
+
+}
+void ZerosTest() {
+    Bigint a("0005");
+    assert(a == 5);
 }
 int main() {
     LowDigitTest();
     HighDigitTest();
     CompTest1();
     CompTest2();
+    ZerosTest();
     cout << "Program is running correctly" << std::endl;
 }

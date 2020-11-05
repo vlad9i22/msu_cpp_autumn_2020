@@ -1,5 +1,5 @@
-#ifndef Matrix_H
-#define Matrix_H 
+#ifndef Bigint_H
+#define Bigint_H 
 #include <iostream>
 #include <stdexcept>
 #include <algorithm>
@@ -32,10 +32,20 @@ public:
       str.size = 0;
       str.curr = 0;
     }
+    myvector &operator=(myvector &&a) {
+        num = a.num;
+        size = a.size;
+        curr = a.curr;
+        a.num = nullptr;
+        a.size = 0;
+        a.curr = 0;
+        return *this;
+    }
     myvector &operator=(const myvector &a) {
         if(this == &a) {
             return *this;
         }
+        delete [] num;
         num = new char [a.size];
         for(int64_t i = 0; i < a.size; ++i) {
             num[i] = a.num[i];
@@ -100,7 +110,15 @@ public:
         } else {
             sign = 1;
         }
-        for(int64_t i = s.size() - 1; i >= 0; --i) {
+        int64_t k = 0;
+        int64_t i = s.size() - 1;
+        if(s[0] == '-') {
+            k++;
+        }
+        while(k < i && s[k] == '0') {
+            k++;
+        }
+        for(; i >= k; --i) {
             if(s[i] != '-') {
                 num.push_back(s[i] - '0');
             }
@@ -120,6 +138,13 @@ public:
         }
         num = a.num;
         sign = a.sign;
+        return *this;
+    }
+    Bigint &operator=(Bigint &&a) {
+        num = a.num;
+        sign = a.sign;
+        a.num = myvector(0);
+        a.sign = 1;
         return *this;
     }
     const Bigint operator-() const {
