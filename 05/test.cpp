@@ -28,7 +28,7 @@ struct Data1
 };
 struct Data2
 {
-    double c;
+    string c;
     uint64_t a;
     bool b;
 
@@ -63,7 +63,7 @@ void Test2() {
     assert(err == Error::CorruptedArchive);
 }
 // void Test3() {
-//     Data2 x { 1.5, true, 223 };
+//     Data2 x { "abcdffe", true, 223 };
 //     std::stringstream stream;
 //     Serializer serializer(stream);
 //     serializer.save(x);
