@@ -18,17 +18,17 @@ class Serializer
 {
     static constexpr char Separator = ' ';
 public:
-    explicit Serializer(std::ostream& out) : out(out) {
+    explicit Serializer(std::ostream &out) : out(out) {
     }
 
     template <class T>
-    Error save(T&& object)
+    Error save(T &&object)
     {
         return object.serialize(*this);
     }
 
     template <class... ArgsT>
-    Error operator()(ArgsT... args)
+    Error operator()(ArgsT &&...args)
     {
         return process(args...);
     }
@@ -38,7 +38,7 @@ private:
         return Error::CorruptedArchive;
     }
     template <typename T, typename... Args>
-    Error process(T &&val, Args&&... args) {
+    Error process(T &&val, Args &&...args) {
         Error wr = process(val);
         if(wr == Error::NoError) {
             out << Separator;
@@ -55,7 +55,7 @@ private:
         }
         return Error::NoError;
     }
-    Error process(uint64_t &a) {
+    Error process(uint64_t a) {
         out << a;
         return Error::NoError;
     }
@@ -64,7 +64,7 @@ class Deserializer
 {
     static constexpr char Separator = ' ';
 public:
-    explicit Deserializer(std::istream& in) : in(in) {
+    explicit Deserializer(std::istream &in) : in(in) {
     }
 
     template <class T>
@@ -73,8 +73,8 @@ public:
         return object.serialize(*this);
     }
 
-    template <class... ArgsT>
-    Error operator()(ArgsT&&... args)
+    template <class ...ArgsT>
+    Error operator()(ArgsT &&...args)
     {
         return process(args...);
     }
@@ -83,8 +83,8 @@ private:
     Error procces(...) {
         return Error::CorruptedArchive;
     }
-    template <typename T, typename... Args>
-    Error process(T &&val, Args&&... args) {
+    template <typename T, typename ...Args>
+    Error process(T &&val, Args &&...args) {
         Error wr = process(val);
         if(wr == Error::NoError) {
             return process(std::forward<Args>(args)...);
@@ -109,7 +109,11 @@ private:
         in >> s;
         try {
             a = stoull(s);
-        } catch(...) {
+        } catch(std::invalid_argument &ia) {
+            cout << "Invalid argument" << endl;
+            return Error::CorruptedArchive;
+        } catch(std::out_of_range &ia) {
+            cout << "out_of_range" << endl;
             return Error::CorruptedArchive;
         }
         return Error::NoError;

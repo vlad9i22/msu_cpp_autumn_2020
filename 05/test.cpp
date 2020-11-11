@@ -63,7 +63,7 @@ void Test2() {
     assert(err == Error::CorruptedArchive);
 }
 // void Test3() {
-//     Data2 x { "abcdffe", true, 223 };
+//     Data2 x { "abcdffe", 234, true };
 //     std::stringstream stream;
 //     Serializer serializer(stream);
 //     serializer.save(x);
