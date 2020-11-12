@@ -38,7 +38,30 @@ struct Data2
         return serializer(a, b, c);
     }
 };
+struct Data3
+{
+    uint64_t c;
+    uint64_t a;
+    uint64_t b;
 
+    template <class Serializer>
+    Error serialize(Serializer& serializer)
+    {
+        return serializer(a, b, c);
+    }
+};
+struct Data4
+{
+    bool c;
+    bool a;
+    bool b;
+
+    template <class Serializer>
+    Error serialize(Serializer& serializer)
+    {
+        return serializer(a, b, c);
+    }
+};
 void Test1() {
     Data x { 1, true, 2 };
     std::stringstream stream;
@@ -79,6 +102,16 @@ void Test4() {
     assert(1 == y.a);
     assert(true == y.b);
     assert(2 == y.c);
+}
+void Test5() {
+    Data4 x { false, false, false  };
+    std::stringstream stream;
+    Serializer serializer(stream);
+    serializer.save(x);
+    Data3 y { 36, 36, 36 };
+    Deserializer deserializer(stream);
+    const Error err = deserializer.load(y);
+    assert(err == Error::CorruptedArchive);
 }
 int main() {
     Test1();
