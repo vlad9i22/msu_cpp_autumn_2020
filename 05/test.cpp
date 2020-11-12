@@ -68,9 +68,22 @@ void Test3() {
     Serializer serializer(stream);
     assert(serializer.save(x) == Error::CorruptedArchive);
 }
+void Test4() {
+    std::stringstream stream;
+    Serializer serializer(stream);
+    serializer.save(Data{1, true, 2});
+    Data y { 0, false, 0 };
+    Deserializer deserializer(stream);
+    const Error err = deserializer.load(y);
+    assert(err == Error::NoError);
+    assert(1 == y.a);
+    assert(true == y.b);
+    assert(2 == y.c);
+}
 int main() {
     Test1();
     Test2();
     Test3();
+    Test4();
     cout << "Program passed tests" << endl;
 }
