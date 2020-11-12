@@ -30,16 +30,17 @@ public:
     template <class... ArgsT>
     Error operator()(ArgsT &&...args)
     {
-        return process(args...);
+        return process(std::forward<ArgsT>(args)...);
     }
 private:
     std::ostream &out;
-    Error procces(...) {
+    template <class T>
+    Error process(T &&) {
         return Error::CorruptedArchive;
     }
     template <typename T, typename... Args>
     Error process(T &&val, Args &&...args) {
-        Error wr = process(val);
+        Error wr = process(std::forward<T>(val));
         if(wr == Error::NoError) {
             out << Separator;
             return process(std::forward<Args>(args)...);
@@ -76,16 +77,17 @@ public:
     template <class ...ArgsT>
     Error operator()(ArgsT &&...args)
     {
-        return process(args...);
+        return process(std::forward<ArgsT>(args)...);
     }
 private:
     std::istream &in;
-    Error procces(...) {
+    template <class T>
+    Error process(T &&) {
         return Error::CorruptedArchive;
     }
     template <typename T, typename ...Args>
     Error process(T &&val, Args &&...args) {
-        Error wr = process(val);
+        Error wr = process(std::forward<T>(val));
         if(wr == Error::NoError) {
             return process(std::forward<Args>(args)...);
         } else {
@@ -109,13 +111,10 @@ private:
         in >> s;
         try {
             a = stoull(s);
-        } catch(std::invalid_argument &ia) {
-            cout << "Invalid argument" << endl;
+        } catch(std::logic_error &ia) {
+            cout << "Logic error" << endl;
             return Error::CorruptedArchive;
-        } catch(std::out_of_range &ia) {
-            cout << "out_of_range" << endl;
-            return Error::CorruptedArchive;
-        }
+        } 
         return Error::NoError;
     }
 };
