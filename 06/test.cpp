@@ -43,15 +43,15 @@ void Test3() {
         assert(1 == 0);
     }
     try {
-        format("}{1} {throw with const!}{3}", 0, 1);
-    } catch (const std::out_of_range &) {
+        format("}{1} {0}{1}", 0, 1);
+    } catch (const std::invalid_argument &) {
         cout << "Correct catch 3" << endl;
     } catch(...) {
         assert(1 == 0);
     }
     try {
-        format("{{}}{1} {throw with const!}{3}", 0, 1);
-    } catch (std::invalid_argument &) {
+        format("{{}}{1} {0}{1}", 0, 1);
+    } catch (const std::invalid_argument &) {
         cout << "Correct catch 4" << endl;
     } catch(...) {
         assert(1 == 0);

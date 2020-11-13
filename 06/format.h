@@ -26,7 +26,7 @@ std::string format(const std::string &s, Args &&...args) {
     std::stringstream res;
     for(size_t i = 0; i < s.size(); ++i) {
         if(s[i] == '}') {
-            throw std::out_of_range("} without { is a mistake");
+            throw std::invalid_argument("} without { is a mistake");
         } else if(s[i] != '{') {
             res << s[i];
         } else {
@@ -36,12 +36,14 @@ std::string format(const std::string &s, Args &&...args) {
                 num += s[i];
                 ++i;
             }
+            size_t number;
             try {
+                number = stoull(num);
             } catch(const std::logic_error &) {
                 throw std::invalid_argument("value in {} must be a number");
             }
             try {
-                res << v.at(stoull(num));
+                res << v.at(number);
             } catch(const std::out_of_range &) {
                 throw std::out_of_range("Not enough arguments");
             }
