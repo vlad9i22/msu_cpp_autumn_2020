@@ -12,6 +12,8 @@ using namespace std;
 void process(std::vector<string> &v) {
     return;
 }
+
+
 template <class T, class ...Args>
 void process(std::vector<string> &v, T &&arg, Args &&...args) {
     std::stringstream ss;
@@ -19,6 +21,32 @@ void process(std::vector<string> &v, T &&arg, Args &&...args) {
     v.push_back(ss.str());
     process(v, args...);
 }
+
+
+class MyInvalidArgument : public std::exception
+{
+    string message;
+public:
+    MyInvalidArgument(const string &message) : message(message) {}
+    ~MyInvalidArgument() = default;
+    const char *what() const noexcept {
+        return "You argument is invalid";
+    }
+};
+
+
+class MyOutOfRange : public std::exception
+{
+    string message;
+public:
+    MyOutOfRange(const string &message) : message(message) {}
+    ~MyOutOfRange() = default;
+    const char *what() const noexcept {
+        return "Your argument is out of range";
+    }
+};
+
+
 template <class ...Args>
 std::string format(const std::string &s, Args &&...args) {
     std::vector<std::string> v;
@@ -26,7 +54,7 @@ std::string format(const std::string &s, Args &&...args) {
     std::stringstream res;
     for(size_t i = 0; i < s.size(); ++i) {
         if(s[i] == '}') {
-            throw std::invalid_argument("} without { is a mistake");
+            throw MyInvalidArgument("} without { is a mistake");
         } else if(s[i] != '{') {
             res << s[i];
         } else {
@@ -36,16 +64,19 @@ std::string format(const std::string &s, Args &&...args) {
                 num += s[i];
                 ++i;
             }
+            if(s[i] != '}') {
+                throw MyInvalidArgument("No } for {");
+            }
             size_t number;
             try {
                 number = stoull(num);
             } catch(const std::logic_error &) {
-                throw std::invalid_argument("value in {} must be a number");
+                throw MyInvalidArgument("value in {} must be a number");
             }
             try {
                 res << v.at(number);
             } catch(const std::out_of_range &) {
-                throw std::out_of_range("Not enough arguments");
+                throw MyOutOfRange("Not enough arguments");
             }
         }
     }

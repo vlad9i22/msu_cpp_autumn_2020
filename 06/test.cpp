@@ -30,29 +30,36 @@ void Test2() {
 void Test3() {
     try {
         format("{1} {2}{3}", 0, 1);
-    } catch (const std::out_of_range &) {
+    } catch (const MyOutOfRange &) {
         cout << "Correct catch 1" << endl;
     } catch(...) {
         assert(1 == 0);
     }
     try {
         format("{1} {throw with const!}{3}", 0, 1);
-    } catch (const std::invalid_argument &) {
+    } catch (const MyInvalidArgument &) {
         cout << "Correct catch 2" << endl;
     } catch(...) {
         assert(1 == 0);
     }
     try {
         format("}{1} {0}{1}", 0, 1);
-    } catch (const std::invalid_argument &) {
+    } catch (const MyInvalidArgument &) {
         cout << "Correct catch 3" << endl;
     } catch(...) {
         assert(1 == 0);
     }
     try {
         format("{{}}{1} {0}{1}", 0, 1);
-    } catch (const std::invalid_argument &) {
+    } catch (const MyInvalidArgument &) {
         cout << "Correct catch 4" << endl;
+    } catch(...) {
+        assert(1 == 0);
+    }
+    try {
+        format("{{}}{1} {0}{1adfgadfghadfgh", 0, 1);
+    } catch (const MyInvalidArgument &) {
+        cout << "Correct catch 5" << endl;
     } catch(...) {
         assert(1 == 0);
     }

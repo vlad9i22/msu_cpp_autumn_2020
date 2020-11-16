@@ -8,5 +8,6 @@
 #include <assert.h>
 #include "format.h"
 using namespace std;
+
 int main() {
 }
