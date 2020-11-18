@@ -57,7 +57,7 @@ void Test3() {
         assert(1 == 0);
     }
     try {
-        format("{{}}{1} {0}{1adfgadfghadfgh", 0, 1);
+        format("{{}}{1} {0}{1adfgadfghadfgh", "test");
     } catch (const MyInvalidArgument &) {
         cout << "Correct catch 5" << endl;
     } catch(...) {

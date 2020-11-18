@@ -19,7 +19,7 @@ void process(std::vector<string> &v, T &&arg, Args &&...args) {
     std::stringstream ss;
     ss << arg;
     v.push_back(ss.str());
-    process(v, args...);
+    process(v, std::forward<Args>(args)...);
 }
 
 
@@ -29,7 +29,7 @@ class MyInvalidArgument : public std::exception
 public:
     MyInvalidArgument(const string &message) : message(message) {}
     ~MyInvalidArgument() = default;
-    const char *what() const noexcept {
+    const char *what() const noexcept override{
         return "You argument is invalid";
     }
 };
@@ -41,7 +41,7 @@ class MyOutOfRange : public std::exception
 public:
     MyOutOfRange(const string &message) : message(message) {}
     ~MyOutOfRange() = default;
-    const char *what() const noexcept {
+    const char *what() const noexcept override {
         return "Your argument is out of range";
     }
 };
@@ -50,7 +50,7 @@ public:
 template <class ...Args>
 std::string format(const std::string &s, Args &&...args) {
     std::vector<std::string> v;
-    process(v, args...);
+    process(v, std::forward<Args>(args)...);
     std::stringstream res;
     for(size_t i = 0; i < s.size(); ++i) {
         if(s[i] == '}') {
