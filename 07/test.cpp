@@ -8,9 +8,10 @@ void Test1() {
     for(int i = 0; i < 10; ++i) {
         a.push_back(i);
     }
+    a[0];
     assert(a[5] == 5);
-    assert(a.my_size() == 10);
-    assert(a.my_capacity() == 16);
+    assert(a.size() == 10);
+    assert(a.capacity() == 16);
 }
 
 void Test2() {
@@ -38,20 +39,20 @@ void Test3() {
     a.push_back(3);
     a.push_back(4);
     a.push_back(5);
-    assert(a.my_size() == 3);
-    double b = a.pop_back();
-    assert(b == 5 && a.my_size() == 2);
+    assert(a.size() == 3);
+    a.pop_back();
+    assert(a.size() == 2);
 }
 void Test4() {
     Vector<int> a;
     a.resize(5);
-    assert(a[4] == 0 && a.my_size() == 5);
+    assert(a[4] == 0 && a.size() == 5);
     Vector<int> b;
     b.reserve(10);
     for(int i = 0; i < 10; ++i) {
         b.push_back(i);
     }
-    assert(b.my_capacity() == 10);
+    assert(b.capacity() == 10);
 }
 
 int main() {
