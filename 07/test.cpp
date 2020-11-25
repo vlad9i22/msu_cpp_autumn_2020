@@ -54,11 +54,30 @@ void Test4() {
     }
     assert(b.capacity() == 10);
 }
-
+void Test5() {
+    Vector<int> a;
+    for(int i = 0; i < 10; ++i) {
+        a.push_back(i);
+    }
+    Vector<int> b = a;
+    a[4] = 123;
+    assert(b[4] == 4);
+    Vector<int> c = std::move(Vector<int>(5, 53));
+    for(auto &i : c) {
+        assert(i == 53);
+    }
+    assert(c.size() == 5);
+    c = Vector<int>(5, 51);
+    assert(c[3] == 51);
+    Vector<int> d;
+    d = c;
+    assert(d[3] == 51);
+}
 int main() {
     Test1();
     Test2();
     Test3();
     Test4();
+    Test5();
     cout << "Program passed tests" << endl;
 }

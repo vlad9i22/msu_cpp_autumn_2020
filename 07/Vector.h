@@ -23,6 +23,11 @@ public:
             *p = value;
         }
     }
+    void construct(pointer p, T&& value) {
+        if(p) {
+            *p = value;
+        }
+    }
     void deallocate(pointer p, size_t) {
         delete [] p;
     }
@@ -37,16 +42,45 @@ class Vector {
     T *a;
 public:
     using value_type = T;
-    Vector(size_t size_ = 0, const T &value = T(), size_t capacity_ = 1): size_(size_), capacity_(capacity_) {
+    Vector(size_t size_ = 0, const T &value = T()): size_(size_) {
+        capacity_ = size_ + 1;
         a = memory.allocate(capacity_);
         for(size_t i = 0; i < size_; ++i) {
             memory.construct(a + i, value);
         }
     }
+    Vector(const Vector &cop): size_(cop.size_), capacity_(cop.capacity_) {
+        a = memory.allocate(capacity_);
+        for(size_t i = 0; i < size_; ++i) {
+            memory.construct(a + i, cop[i]);
+        }
+    }
+    Vector(Vector &&mov): size_(mov.size_), capacity_(mov.capacity_) {
+        a = mov.a;
+        mov.a = nullptr;
+        mov.size_ = 0;
+        mov.capacity_ = 0;
+    }
     T &operator[] (const size_t pos) {
         return a[pos];
     }
     void push_back(const T &value) {
+        if(size_ == capacity_) {
+            capacity_ *= 2;
+            T *b = memory.allocate(capacity_);
+            for(size_t i = 0; i < size_; ++i) {
+                memory.construct(b + i, *(a + i));
+            }
+            for(size_t i = size_; i < size_; ++i) {
+                memory.construct(b + i, T());
+            }
+            memory.deallocate(a, capacity_ / 2);
+            a = b;
+        }
+        memory.construct(a + size_, value);
+        size_ += 1;
+    }
+    void push_back(T &&value) {
         if(size_ == capacity_) {
             capacity_ *= 2;
             T *b = memory.allocate(capacity_);
@@ -87,6 +121,32 @@ public:
     }
     void clear() noexcept{
         size_ = 0;
+    }
+    Vector& operator=(Vector& v) {
+        if(a == v.a) {
+            return *this;
+        }
+        memory.deallocate(a, capacity_);
+        size_ = v.size_;
+        capacity_ = v.capacity_;
+        a = memory.allocate(capacity_);
+        for(size_t i = 0; i < size_; ++i) {
+            a[i] = v.a[i];
+        }
+        return *this;
+    }
+    Vector& operator=(Vector&& v) {
+        if(a == v.a) {
+            return *this;
+        }
+        memory.deallocate(a, capacity_);
+        size_ = v.size_;
+        capacity_ = v.capacity_;
+        a = v.a;
+        v.a = nullptr;
+        v.size_ = 0;
+        v.capacity_ = 0;
+        return *this;
     }
     class iterator : public std::iterator<std::random_access_iterator_tag, T> {
         T *ptr;
@@ -191,7 +251,6 @@ public:
         return capacity_;
     }
     const T& operator[](size_t pos) const{
-        cout << "called" << endl;
         return a[pos];
     }
     ~Vector() {
