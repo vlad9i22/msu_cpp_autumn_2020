@@ -61,19 +61,15 @@ public:
             std::unique_lock<std::mutex> lock(qmut);
             stop = true;
         }
-        {
-            std::lock_guard<std::mutex> lock(end_mutex);
-            condition.notify_all();
-            for(auto &thr : workers) {
-                thr.join();
-            }
+        condition.notify_all();
+        for(auto &thr : workers) {
+            thr.join();
         }
     }
 private:
     std::vector<std::thread> workers;
     std::queue<std::function<void()>> tasks;
     std::mutex qmut;
-    std::mutex end_mutex;
     std::condition_variable condition;
     bool stop;
 };
