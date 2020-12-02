@@ -22,7 +22,9 @@ public:
                     std::function<void()> task;
                     {
                         std::unique_lock<std::mutex> lock(this->qmut);
-                        this->condition.wait(lock);
+                        this->condition.wait(lock, [this]{
+                            return stop || !tasks.empty();
+                        });
                         if(stop && tasks.empty()) {
                             return;
                         }
@@ -59,15 +61,19 @@ public:
             std::unique_lock<std::mutex> lock(qmut);
             stop = true;
         }
-        condition.notify_all();
-        for(auto &thr : workers) {
-            thr.join();
+        {
+            std::lock_guard<std::mutex> lock(end_mutex);
+            condition.notify_all();
+            for(auto &thr : workers) {
+                thr.join();
+            }
         }
     }
 private:
     std::vector<std::thread> workers;
     std::queue<std::function<void()>> tasks;
     std::mutex qmut;
+    std::mutex end_mutex;
     std::condition_variable condition;
     bool stop;
 };

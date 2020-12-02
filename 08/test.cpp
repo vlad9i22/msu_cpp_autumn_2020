@@ -1,6 +1,7 @@
 #include <iostream>
 #include "pool.h"
 #include <assert.h>
+#include <unistd.h>
 using namespace std;
 int foo(int a) {
     return a + 40;
@@ -26,8 +27,16 @@ void Test2() {
     auto task2 = pool.exec([]() { return 1; });
     assert(task2.get() == 1);
 }
+void Test3() {
+    ThreadPool pool(8);
+    auto task2 = pool.exec([]() { 
+        sleep(1);
+        return 1; 
+    });
+}
 int main() {
     Test1();
     Test2();
+    Test3();
     cout << "Program passed tests" << endl;
 }
