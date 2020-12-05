@@ -4,325 +4,259 @@
 #include <stdexcept>
 #include <algorithm>
 #include <string>
+#include <iomanip>
 using namespace std;
-int64_t count_digit(int a) {
-    unsigned count = 0;
-    while(a != 0) {
-        count++;
-        a /= 10;
-    }
-    return count;
-}
-class myvector {
-    char *num;
-    int size;
-    int curr;
-public:
-    myvector(int64_t size = 10): size(size), curr(0) {
-        num = new char [size];
-    }
-    myvector(const myvector& a): size(a.size), curr(a.curr) {
-        num = new char[size];
-        for(int64_t i = 0; i < size; ++i) {
-            num[i] = a[i];
-        }
-    }
-    myvector(myvector &&str) : num(str.num), size(str.size), curr(str.curr) {
-      str.num = nullptr;
-      str.size = 0;
-      str.curr = 0;
-    }
-    myvector &operator=(myvector &&a) {
-        num = a.num;
-        size = a.size;
-        curr = a.curr;
-        a.num = nullptr;
-        a.size = 0;
-        a.curr = 0;
-        return *this;
-    }
-    myvector &operator=(const myvector &a) {
-        if(this == &a) {
-            return *this;
-        }
-        delete [] num;
-        num = new char [a.size];
-        for(int64_t i = 0; i < a.size; ++i) {
-            num[i] = a.num[i];
-        }
-        size = a.size;
-        curr = a.curr;
-        return *this;
-    }
-    void deletezeros() {
-        while(curr - 1 > 0 && num[curr - 1] == 0) {
-            curr--;
-        }
-    }
-    char &operator[](const int64_t index) const {
-        return num[index];
-    }
-    void push_back(char a) {
-        if(curr == size) {
-            char *n_num = new char [size * 2];
-            for(int64_t i = 0; i < size; ++i) {
-                n_num[i] = num[i];
-            }
-            delete [] num;
-            num = n_num;
-            size = size * 2;
-        }
-        num[curr] = a;
-        curr++;
-    }
-    int64_t mysize() const {
-        return curr;
-    }
-    ~myvector() {
-        delete [] num;
-    }
-};
 class Bigint {
-    int sign;
-    myvector num;
+    bool sign = 0;
+    size_t size = 0;
+    int *array = nullptr;
+    size_t buf = 0;
+    const size_t cap_step = 4;
+    const int base = 1000;
+    const int nbase = 3;
 public:
-    Bigint(): num() {
-        sign = 1;
-    }
+    Bigint(){}
     Bigint(int a) {
-        if(a == 0) {
-            num.push_back(0);
-        }
-        if(a < 0) {
-            sign = -1;
-        } else {
-            sign = 1;
-        }
-        a *= sign;
-        while(a > 0) {
-            num.push_back(a % 10);
-            a /= 10;
-        }
-    }
-    Bigint(std::string s) {
-        if(s[0] == '-') {
-            sign = -1;
-        } else {
-            sign = 1;
-        }
-        int64_t k = 0;
-        int64_t i = s.size() - 1;
-        if(s[0] == '-') {
-            k++;
-        }
-        while(k < i && s[k] == '0') {
-            k++;
-        }
-        for(; i >= k; --i) {
-            if(s[i] != '-') {
-                num.push_back(s[i] - '0');
+        sign =  (a < 0);
+        a = std::abs(a);
+        array = new int[cap_step]();
+        buf = cap_step;
+        do {
+            if(size == buf) {
+                buf += cap_step;
+                int *tmp = new int[buf]();
+                std::copy(array, array + size, tmp);
+                delete [] array;
+                array = tmp;
             }
+            array[size++] = a % base;
+            a /= base;
+        } while(a > 0);
+    }
+    Bigint(const std::string &s) {
+        int str_size = s.size();
+        if(str_size <= 0) {
+            return;
+        }
+        sign = (s[0] == '-');
+        size = (str_size + nbase - 1) / nbase;
+        buf = size + cap_step - 1;
+        array = new int [buf]();
+        int start = !isdigit(s[0]);
+        int i = max(start, str_size + start - nbase);
+        int j = 0;
+        do {
+            const char *tmp = s.substr(i, nbase).c_str();
+            array[j++] = atoi(tmp);
+            i -= nbase;
+        } while(start <= i);
+        if(i + nbase > start) {
+            const char *tmp = s.substr(start, nbase + i - start).c_str();
+            array[j++] = atoi(tmp);
         }
     }
-    Bigint(Bigint &&str) : sign(str.sign), num(str.num) {
-        str.sign = 1;
-    }
-    Bigint(const Bigint& a) {
-        num = a.num;
+    Bigint(const Bigint &a) {
         sign = a.sign;
+        buf = a.buf;
+        size = a.size;
+        array = new int [buf]();
+        std::copy(a.array, a.array + size, array);
     }
-    char &operator[](const int64_t i) const{
-        return num[i];
+    Bigint(Bigint &&a) {
+        sign = a.sign;
+        buf = a.buf;
+        size = a.size;
+        array = a.array;
+        a.array = nullptr;
     }
     Bigint &operator=(const Bigint &a) {
         if(this == &a) {
             return *this;
         }
-        num = a.num;
+        size = a.size;
+        buf =  a.buf;
         sign = a.sign;
+        int *tmp = new int [buf]();
+        std::copy(a.array, a.array + size, tmp);
+        delete [] array;
+        array = tmp;
         return *this;
     }
     Bigint &operator=(Bigint &&a) {
-        num = a.num;
+        if(this == &a) {
+            return *this;
+        }
+        size = a.size;
+        buf =  a.buf;
         sign = a.sign;
-        a.num = myvector(0);
-        a.sign = 1;
+        array = a.array;
+        a.array = nullptr;
         return *this;
     }
     const Bigint operator-() const {
-        Bigint copy;
-        for(int64_t i = 0; i < num.mysize(); ++i) {
-            copy.num.push_back(num[i]);
-        }
-        copy.sign = (sign == -1 ? 1 : -1);
-        return copy;
+        Bigint res = *this;
+        res.sign = !sign;
+        return res;
     }
-    friend Bigint operator+ (const Bigint &ro, const Bigint &lf);
+    friend Bigint operator+ (const Bigint &lf, const Bigint &ro);
     friend std::ostream& operator<<(std::ostream& os, const Bigint& a);
     friend bool operator ==(const Bigint& lf, const Bigint& ro);
+    friend bool operator !=(const Bigint& lf, const Bigint& ro);
     friend bool operator <(const Bigint& lf, const Bigint& ro);
     friend bool operator >(const Bigint& lf, const Bigint& ro);
+    friend bool operator <=(const Bigint& lf, const Bigint& ro);
+    friend bool operator >=(const Bigint& lf, const Bigint& ro);
     friend Bigint operator-(const Bigint &lf, const Bigint &ro);
     friend Bigint operator*(const Bigint &lf, const Bigint &ro);
+    friend Bigint Sum(const Bigint &a, const Bigint &b);
+    friend Bigint Diff(const Bigint &a, const Bigint &b);
+    ~Bigint() {
+        delete [] array;
+    }
 };
-bool operator ==(const Bigint& lf, const Bigint& ro) {
-    if(lf.sign != ro.sign) {
-        return false;
-    }
-    if(lf.num.mysize() > ro.num.mysize()) {
-        return false;
-    } else if (ro.num.mysize() > lf.num.mysize()) {
-        return false;
-    }
-    for(int64_t i = 0; i < lf.num.mysize(); ++i) {
-        if(lf.num[i] != ro.num[i]) {
-            return false;
-        }
-    }
-    return true;
-}
 bool operator <(const Bigint& lf, const Bigint& ro) {
     if(lf.sign != ro.sign) {
-        return lf.sign < ro.sign;
+        return lf.sign;
     }
-    if(lf.num.mysize() > ro.num.mysize()) {
-        return false;
-    } else if (ro.num.mysize() > lf.num.mysize()) {
-        return true;
+    if(lf.size != ro.size) {
+        return (lf.size > ro.size) == lf.sign;
     }
-    if(lf == ro) {
-        return 0;
-    }
-    for(int64_t i = lf.num.mysize(); i >= 0; --i) {
-        if(lf.num[i] > ro.num[i]) {
-            return false;
+    for(int i = 0; i >= 0; --i) {
+        if(lf.array[i] != ro.array[i]) {
+            return (lf.array[i] > ro.array[i]) == lf.sign;
         }
     }
-    return true;
-}
-bool operator >(const Bigint& lf, const Bigint& ro) {
-    if(lf.sign != ro.sign) {
-        return lf.sign > ro.sign;
-    }
-    if(lf == ro) {
-        return false;
-    }
-    if(lf.num.mysize() < ro.num.mysize()) {
-        return false;
-    } else if (ro.num.mysize() < lf.num.mysize()) {
-        return true;
-    }
-    for(int64_t i = lf.num.mysize(); i >= 0; --i) {
-        if(lf.num[i] < ro.num[i]) {
-            return false;
-        }
-    }
-    return true;
-}
-bool operator !=(const Bigint& lf, const Bigint& ro) {
-        return !(lf == ro);
+    return false;
 }
 bool operator <=(const Bigint& lf, const Bigint& ro) {
-        return (lf < ro || lf == ro);
-} 
-bool operator >=(const Bigint& lf, const Bigint& ro) {
-        return !(lf < ro);
+    return lf < ro || lf == ro;
 }
-Bigint operator-(const Bigint &lf1, const Bigint &ro1) {
-    if(lf1 == -ro1) {
-        return Bigint(0);
-    }
-    if(lf1.sign == -1 && ro1.sign == -1) {
-        return -((-lf1) - (-ro1));
-    }
-    if(lf1.sign == 1 && ro1.sign == -1) {
-        return (lf1 + -ro1);
-    }
-    if(lf1.sign == -1 && ro1.sign == 1) {
-        return -(-lf1 + ro1);
-    }
-    Bigint res;
-    Bigint lf = lf1, ro = ro1;
-    if(lf < ro) {
-        lf = ro1;
-        ro = lf1;
-        res.sign = -1;
-    }
-    int64_t size = max(lf.num.mysize(), ro.num.mysize());
-    int carry = 0;
-    for(int i = 0; i < size || carry != 0; ++i) {
-        char l, r;
-        l = i >= lf.num.mysize() ? 0 : lf[i];
-        r = i >= ro.num.mysize() ? 0 : ro[i];
-        res.num.push_back(l - r - carry);
-        carry = (l - r - carry) < 0;
-        if(carry != 0) {
-            res[i] += 10;
+bool operator >(const Bigint& lf, const Bigint& ro) {
+    return !(lf <= ro);
+}
+bool operator >=(const Bigint& lf, const Bigint& ro) {
+    return lf > ro || lf == ro;
+}
+bool operator !=(const Bigint& lf, const Bigint& ro) {
+    return !(lf == ro);
+}
+Bigint operator+ (const Bigint &lf, const Bigint &ro) {
+    if(ro.sign != lf.sign) {
+        if(lf.sign) {
+            return Diff(ro, -lf);
+        } else {
+            return Diff(lf, -ro);
         }
     }
-    res.num.deletezeros();
-    return res;
+    return Sum(lf, ro);
 }
-Bigint operator+(const Bigint &lf, const Bigint &ro) {
-    if(lf.sign == -1 && ro.sign == -1) {
-        return -(-ro + -lf);
+Bigint operator-(const Bigint &lf, const Bigint &ro) {
+    if(lf.sign != ro.sign) {
+        return Sum(lf, ro);
     }
-    if(lf.sign == 1 && ro.sign == -1) {
-        return lf - (-ro);
+    if(lf.sign) {
+        return Diff(-ro, -lf);
     }
-    if(lf.sign == -1 && ro.sign == 1) {
-        return ro - (- lf);
-    }
-    Bigint res;
-    int64_t size = max(lf.num.mysize(), ro.num.mysize());
-    char add = 0;
-    for(int i = 0; i < size || add != 0; ++i) {
-        char l = i >= lf.num.mysize() ? 0 : lf[i];
-        char r = i >= ro.num.mysize() ? 0 : ro[i];
-        res.num.push_back((l + r + add) % 10);
-        add = (l + r + add) / 10;
-    }
-    res.num.deletezeros();
-    return res;
+    return Diff(lf, ro);
 }
 Bigint operator*(const Bigint &lf, const Bigint &ro) {
-    if(lf.sign == -1 && ro.sign == -1) {
-        return (-ro * -lf);
-    }
-    if(lf.sign == 1 && ro.sign == -1) {
-        return -(lf * (-ro));
-    }
-    if(lf.sign == -1 && ro.sign == 1) {
-        return -(ro * (-lf));
-    }
     Bigint res;
-    int64_t size = lf.num.mysize() + ro.num.mysize();
-    for(int64_t i = 0; i < size; ++i) {
-        res.num.push_back(0);
-    }
-    for(int64_t i = 0; i < lf.num.mysize(); ++i) {
+    res.sign = (lf.sign != ro.sign);
+    res.buf = lf.size + ro.size + lf.cap_step;
+    res.array = new int [res.buf]();
+    size_t j = 0;
+    while(j < ro.size) {
+        size_t i = 0;
         int carry = 0;
-        for(int64_t j = 0; j < ro.num.mysize() || carry != 0; ++j) {
-            int64_t cur = res[i + j] + ro[j] * lf[i] + carry;
-            res[i + j] = cur % 10;
-            carry = cur / 10;
+        for(;i < lf.size; ++i) {
+            res.array[i + j] += ro.array[j] * lf.array[i] + carry;
+            carry = res.array[i + j] / lf.base;
+            res.array[i + j] %= lf.base;
         }
-    }
-    res.num.deletezeros();
+        while(carry) {
+            res.array[i + j] += carry;
+            carry = res.array[i + j] / lf.base;
+            res.array[i + j] %= lf.base;
+            ++i;
+        }
+        ++j;
+    }  
+    int find_size = res.buf;
+    for(; res.array[find_size - 1] == 0 && find_size > 1; --find_size);
+    res.size = find_size;
     return res;
 }
-
-
-std::ostream& operator<<(std::ostream& os, const Bigint& a)
-{
-    if(a.sign == -1) {
-        os << "-";
+std::ostream& operator<<(std::ostream& out, const Bigint& a) {
+    if(a.size == 0) {
+        return out;
     }
-    int i = a.num.mysize() - 1;
-    for(; i >= 0; --i) {
-        os << int(a.num[i]);
+    if(a.sign) {
+        out << '-';
     }
-    os << endl;
-    return os;
+    out << a.array[a.size - 1];
+    for(int i = a.size - 2; i >= 0; --i) {
+        out << std::setfill('0') << std::setw(a.nbase) << a.array[i];
+    }
+    return out;
+}
+bool operator ==(const Bigint& lf, const Bigint& ro) {
+    if(lf.size != ro.size || lf.sign != ro.sign) {
+        return false;
+    }
+    for(size_t i = 0; i < lf.size; ++i) {
+        if(lf.array[i] != ro.array[i]) {
+            return false;
+        }
+    }
+    return true;
+}
+Bigint Sum(const Bigint &a, const Bigint &b) {
+    Bigint res;
+    res.sign = a.sign;
+    res.buf = max(a.buf, b.buf) + res.cap_step;
+    res.array = new int [res.buf]();
+    std::copy(a.array, a.array + a.size, res.array);
+    size_t i = 0;
+    int carry = 0;
+    for(; i < b.size; ++i) {
+        res.array[i] += b.array[i] + carry;
+        carry = res.array[i] / res.base;
+        res.array[i] %= res.base;
+    }
+    while(carry) {
+        res.array[i] += carry;
+        carry = res.array[i] / res.base;
+        res.array[i] %= res.base;
+        ++i;
+    }
+    res.size = max(i, res.size);
+    return res;
+}
+Bigint Diff(const Bigint &a, const Bigint &b) {
+    Bigint res;
+    if(b > a) {
+        res = Diff(b, a);
+        res.sign = 1;
+        return res;
+    }
+    res = a;
+    size_t i = 0;
+    while(i < b.size) {
+        res.array[i] -= b.array[i];
+        if(res.array[i] < 0) {
+            res.array[i + 1] -= 1;
+            res.array[i] += res.base;
+        }
+        ++i;
+    }
+    while((i < res.size - 1) && res.array[i] < 0) {
+        res.array[i + 1] -= 1;
+        res.array[i] += res.base;
+        ++i;
+    }
+    while(res.array[res.size - 1] == 0 && res.size > 1) {
+        res.size--;
+    }
+    return res;
 }
 #endif
